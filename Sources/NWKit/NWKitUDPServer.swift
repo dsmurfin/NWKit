@@ -109,6 +109,9 @@ public class NWKitUDPServer {
     /// Whether the server is currently listening for UDP messages (private).
     internal private (set) var _isListening: Bool = false
     
+    /// Whether the server has been started (this is used to decide whether multicast groups should actually join).
+    private var isStarted: Bool = false
+    
     // MARK: Public API
     
     /// Initializes the server with a port, and optionally an interface and multicast groups.
@@ -176,6 +179,7 @@ public class NWKitUDPServer {
             try configureServer()
             listener?.start(queue: self.queue)
         }
+        isStarted = true
     }
     
     /// Stops listening for messages.
@@ -192,6 +196,7 @@ public class NWKitUDPServer {
             joinedMulticastGroups.forEach { self.leaveMulticastGroup($0, preserveGroup: !clearingMulticast) }
         }
         listener?.cancel()
+        isStarted = false
     }
     
     /// Attempts to join the multicast group provided.
@@ -222,8 +227,9 @@ public class NWKitUDPServer {
         // if multicastGroups is nil we should stop listening
         let multicastGroups = queue.sync { self.multicastGroups }
         if multicastGroups != nil {
+            let isStarted = self.isStarted
             try queue.sync {
-                try joinMulticastGroup(host)
+                try joinMulticastGroup(host, shouldStart: isStarted)
             }
         } else {
             queue.sync {
@@ -237,13 +243,16 @@ public class NWKitUDPServer {
     ///
     /// - parameters:
     ///    - multicastGroup: The multicast group to join.
+    ///    - shouldStart: Whether the server should start.
     ///
     /// - throws: A `NWKitUDPServerError`or `NWError`.
     ///
     @available(iOS 14, macOS 11, *)
-    private func joinMulticastGroup(_ multicastGroup: NWEndpoint.Host) throws {
+    private func joinMulticastGroup(_ multicastGroup: NWEndpoint.Host, shouldStart: Bool) throws {
         guard !self._joinedMulticastGroups.contains(multicastGroup) else { return }
         multicastGroups?.insert(multicastGroup)
+        
+        guard shouldStart else { return }
         
         guard let port = NWEndpoint.Port(rawValue: self.port) else {
             throw NWKitUDPServerError.invalidPort(self.port)
@@ -353,12 +362,14 @@ public class NWKitUDPServer {
                     throw NWKitUDPServerError.invalidPort(self.port)
                 }
                 
-                var errors: [Error] = []
-                multicastGroups.forEach {
-                    do {
-                        try self.joinMulticastGroup($0)
-                    } catch {
-                        errors.append(error)
+                let errors: [Error] = queue.sync {
+                    multicastGroups.compactMap {
+                        do {
+                            try self.joinMulticastGroup($0, shouldStart: true)
+                            return nil
+                        } catch {
+                            return error
+                        }
                     }
                 }
                 
