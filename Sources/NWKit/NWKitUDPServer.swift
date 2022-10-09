@@ -118,7 +118,7 @@ public class NWKitUDPServer {
     ///    - port: The UDP port on which to listen.
     ///    - delegateQueue: Optional: An optional serial `DispatchQueue` on which to receive delegate notifications.
     ///
-    init(interface: String?, port: UInt16, delegateQueue: DispatchQueue? = nil) {
+    public init(interface: String?, port: UInt16, delegateQueue: DispatchQueue? = nil) {
         self.queue = delegateQueue ?? DispatchQueue(label: "UDPServer-\(UUID().uuidString)")
         self.interface = interface
         self.port = port
@@ -138,7 +138,7 @@ public class NWKitUDPServer {
     ///    - delegateQueue: Optional: An optional serial `DispatchQueue` on which to receive delegate notifications.
     ///
     @available(iOS 14, macOS 11, *)
-    init(interface: String?, port: UInt16, multicastGroups: [String]? = nil, delegateQueue: DispatchQueue? = nil) {
+    public init(interface: String?, port: UInt16, multicastGroups: [String]? = nil, delegateQueue: DispatchQueue? = nil) {
         self.queue = delegateQueue ?? DispatchQueue(label: "UDPServer-\(UUID().uuidString)")
         self.interface = interface
         self.port = port
