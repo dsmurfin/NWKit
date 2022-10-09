@@ -28,6 +28,7 @@ import SystemConfiguration
 
 /// NWKit Interface
 ///
+@available(iOS 13, macOS 10.15, *)
 struct NWKitInterface {
     
     /// Attempts to find an NWInterface from a string describing it.

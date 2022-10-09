@@ -27,7 +27,7 @@ import Network
 
 /// NWKit UDP Server Connection
 ///
-@available(iOS 12, macOS 10.14, *)
+@available(iOS 13, macOS 10.15, *)
 final internal class NWKitUDPServerConnection {
 
     /// The `NWConnection` associated with this server connection.

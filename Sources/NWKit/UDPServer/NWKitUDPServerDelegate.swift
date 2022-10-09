@@ -27,6 +27,7 @@ import Network
 
 /// NWKit UDP Server Delegate
 ///
+@available(iOS 13, macOS 10.15, *)
 public protocol NWKitUDPServerDelegate: AnyObject {
     
     /// Called when a `NWKitUDPServer` has started listening.

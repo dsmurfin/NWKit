@@ -27,7 +27,7 @@ import Network
 
 /// NWKit UDP Server
 ///
-@available(iOS 12, macOS 10.14, *)
+@available(iOS 13, macOS 10.15, *)
 public class NWKitUDPServer {
     
     /// The established connections.
@@ -90,9 +90,11 @@ public class NWKitUDPServer {
     private var multicastGroups: Set<NWEndpoint.Host>?
     
     /// The multicast groups that have successfully been joined.
-    public private(set) var joinedMulticastGroups: Set<NWEndpoint.Host> {
-        get { queue.sync { _joinedMulticastGroups } }
-        set { queue.sync { _joinedMulticastGroups = newValue } }
+    public var joinedMulticastGroups: [String] {
+        get {
+            let joinedMulticastGroups = queue.sync { _joinedMulticastGroups }
+            return joinedMulticastGroups.compactMap { $0.formattedString }
+        }
     }
     
     /// The multicast groups that have successfully been joined (private).
@@ -186,6 +188,7 @@ public class NWKitUDPServer {
     public func stopListening(clearingMulticast: Bool = false) {
         guard isListening else { return }
         if #available(iOS 14, macOS 11, *) {
+            let joinedMulticastGroups = queue.sync { _joinedMulticastGroups }
             joinedMulticastGroups.forEach { self.leaveMulticastGroup($0, preserveGroup: !clearingMulticast) }
         }
         listener?.cancel()

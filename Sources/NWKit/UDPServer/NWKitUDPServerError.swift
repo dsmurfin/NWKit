@@ -28,6 +28,7 @@ import Network
 /// NWKit UDP Server Error
 ///
 /// Enumerates all possible `NWKitUDPServer` errors.
+@available(iOS 13, macOS 10.15, *)
 public enum NWKitUDPServerError: Error {
     
     /// The provided UDP port is invalid.
