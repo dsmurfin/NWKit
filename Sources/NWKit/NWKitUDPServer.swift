@@ -90,10 +90,10 @@ public class NWKitUDPServer {
     private var multicastGroups: Set<NWEndpoint.Host>?
     
     /// The multicast groups that have successfully been joined.
-    public var joinedMulticastGroups: [String] {
+    public var joinedMulticastGroups: Set<String> {
         get {
             let joinedMulticastGroups = queue.sync { _joinedMulticastGroups }
-            return joinedMulticastGroups.compactMap { $0.formattedString }
+            return Set(joinedMulticastGroups.compactMap { $0.formattedString })
         }
     }
     
