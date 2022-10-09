@@ -147,6 +147,7 @@ final internal class NWKitUDPServerConnectionGroup {
 /// NWKit UDP Server Connection Group
 ///
 /// Equatable Conformance.
+@available(iOS 14, macOS 11, *)
 extension NWKitUDPServerConnectionGroup: Equatable {
     static func == (lhs: NWKitUDPServerConnectionGroup, rhs: NWKitUDPServerConnectionGroup) -> Bool {
         lhs.id == rhs.id
@@ -156,6 +157,7 @@ extension NWKitUDPServerConnectionGroup: Equatable {
 /// NWKit UDP Server Connection Group
 ///
 /// Hashable Conformance.
+@available(iOS 14, macOS 11, *)
 extension NWKitUDPServerConnectionGroup: Hashable {
     func hash(into hasher: inout Hasher) {
         hasher.combine(id)

@@ -185,7 +185,9 @@ public class NWKitUDPServer {
     ///
     public func stopListening(clearingMulticast: Bool = false) {
         guard isListening else { return }
-        joinedMulticastGroups.forEach { self.leaveMulticastGroup($0, preserveGroup: !clearingMulticast) }
+        if #available(iOS 14, macOS 11, *) {
+            joinedMulticastGroups.forEach { self.leaveMulticastGroup($0, preserveGroup: !clearingMulticast) }
+        }
         listener?.cancel()
     }
     
@@ -339,27 +341,31 @@ public class NWKitUDPServer {
     /// - throws: An error of type `NWKitUDPServerError` or `NWError`.
     ///
     private func configureServer() throws {
-        let multicastGroups = queue.sync { self.multicastGroups }
-        
-        if let multicastGroups {
-            // throw early if the port is invalid
-            guard NWEndpoint.Port(rawValue: self.port) != nil else {
-                throw NWKitUDPServerError.invalidPort(self.port)
-            }
+        if #available(iOS 14, macOS 11, *) {
+            let multicastGroups = queue.sync { self.multicastGroups }
             
-            var errors: [Error] = []
-            multicastGroups.forEach {
-                do {
-                    try self.joinMulticastGroup($0)
-                } catch {
-                    errors.append(error)
+            if let multicastGroups {
+                // throw early if the port is invalid
+                guard NWEndpoint.Port(rawValue: self.port) != nil else {
+                    throw NWKitUDPServerError.invalidPort(self.port)
                 }
-            }
-            
-            if errors.count > 1 {
-                throw NWKitUDPServerError.multipleErrors(errors)
-            } else if let error = errors.first {
-                throw error
+                
+                var errors: [Error] = []
+                multicastGroups.forEach {
+                    do {
+                        try self.joinMulticastGroup($0)
+                    } catch {
+                        errors.append(error)
+                    }
+                }
+                
+                if errors.count > 1 {
+                    throw NWKitUDPServerError.multipleErrors(errors)
+                } else if let error = errors.first {
+                    throw error
+                }
+            } else {
+                try configureListener()
             }
         } else {
             try configureListener()
@@ -483,6 +489,7 @@ extension NWKitUDPServer {
     /// - parameters:
     ///    - connectionGroup: The `NWKitUDPServerConnectionGroup` to add.
     ///
+    @available(iOS 14, macOS 11, *)
     internal func addConnectionGroup(_ connectionGroup: NWKitUDPServerConnectionGroup) {
         connectionGroups.insert(connectionGroup)
         if let host = connectionGroup.host() {
@@ -496,6 +503,7 @@ extension NWKitUDPServer {
     /// - parameters:
     ///    - connectionGroup: The `NWKitUDPServerConnectionGroup` to remove.
     ///
+    @available(iOS 14, macOS 11, *)
     internal func removeConnectionGroup(_ connectionGroup: NWKitUDPServerConnectionGroup) {
         connectionGroups.remove(connectionGroup)
         if let host = connectionGroup.host() {
